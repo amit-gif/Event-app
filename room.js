@@ -1,0 +1,30 @@
+document.addEventListener('DOMContentLoaded', () => {
+  window.lucide?.createIcons();
+  const stateKey = 'rkEventState'; const state = JSON.parse(localStorage.getItem(stateKey) || '{}'); const save = () => localStorage.setItem(stateKey, JSON.stringify(state));
+  const toast = document.querySelector('.room-toast'); let timer; const notify = message => { toast.textContent = message; toast.classList.add('show'); clearTimeout(timer); timer = setTimeout(() => toast.classList.remove('show'), 2200); };
+  document.querySelectorAll('[data-toast]').forEach(button => button.addEventListener('click', () => notify(button.dataset.toast)));
+  document.getElementById('inviteButton')?.addEventListener('click', async () => { const invite = `${location.origin}/event-room.html?invite=RK-AANYA`; try { await navigator.clipboard.writeText(invite); notify('Invite link copied for your event crew'); } catch { notify('Invite link ready to share with your crew'); } });
+  document.getElementById('addTaskButton')?.addEventListener('click', () => { const title = prompt('What should we add to your focus list?'); if (!title) return; const list = document.querySelector('.room-task-list'); const item = document.createElement('label'); item.innerHTML = `<input type="checkbox"><span>${title}</span><small>New</small>`; list.appendChild(item); item.querySelector('input').addEventListener('change', event => notify(event.target.checked ? 'Task marked complete' : 'Task reopened')); notify('New task added to your focus list'); });
+  document.getElementById('allTasksButton')?.addEventListener('click', () => { document.querySelector('.task-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); notify('Showing all event tasks'); });
+  document.getElementById('crewButton')?.addEventListener('click', () => { document.getElementById('addCrewCard')?.scrollIntoView({ behavior: 'smooth', block: 'center' }); notify('Maker discovery is ready for your next brief'); });
+  document.getElementById('discoverButton')?.addEventListener('click', () => { location.href = 'index.html#discover'; });
+  document.querySelectorAll('.room-task-list input').forEach(input => input.addEventListener('change', () => { notify(input.checked ? 'Task marked complete' : 'Task reopened'); }));
+  const range = document.getElementById('roomBudgetRange'); const output = document.getElementById('roomBudget'); range?.addEventListener('input', () => { const value = Number(range.value); output.textContent = new Intl.NumberFormat('en-IN').format(value); state.budget = value; save(); notify('Budget updated for your event room'); }); if (state.budget && range) { range.value = state.budget; output.textContent = new Intl.NumberFormat('en-IN').format(state.budget); }
+  document.querySelectorAll('.room-nav a').forEach(link => link.addEventListener('click', () => { document.querySelectorAll('.room-nav a').forEach(item => item.classList.remove('active')); link.classList.add('active'); }));
+  document.querySelectorAll('.room-tabs button').forEach(tab => tab.addEventListener('click', () => { document.querySelectorAll('.room-tabs button').forEach(item => item.classList.remove('active')); tab.classList.add('active'); notify(`${tab.textContent.trim().replace(/\s+\d+$/, '')} view selected`); }));
+  document.querySelector('.profile-button')?.addEventListener('click', () => notify('Profile settings are ready for your next update'));
+  document.querySelector('.icon-button')?.addEventListener('click', () => notify('You are all caught up'));
+  document.querySelector('.sidebar-bottom button')?.addEventListener('click', () => notify('RK concierge is online and ready to help'));
+  const commandDialog = document.getElementById('commandDialog'); const commandInput = document.getElementById('commandInput');
+  const openCommand = () => { commandDialog?.classList.add('open'); commandDialog?.setAttribute('aria-hidden', 'false'); commandInput?.focus(); };
+  const closeCommand = () => { commandDialog?.classList.remove('open'); commandDialog?.setAttribute('aria-hidden', 'true'); };
+  document.getElementById('commandButton')?.addEventListener('click', openCommand);
+  document.getElementById('commandClose')?.addEventListener('click', closeCommand);
+  commandDialog?.addEventListener('click', event => { if (event.target === commandDialog) closeCommand(); });
+  document.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openCommand(); } if (event.key === 'Escape') closeCommand(); });
+  document.querySelectorAll('[data-command]').forEach(button => button.addEventListener('click', () => { notify(button.dataset.command); closeCommand(); }));
+  document.getElementById('focusTaskButton')?.addEventListener('click', () => document.querySelector('.task-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+  document.getElementById('completeFocusButton')?.addEventListener('click', event => { const task = document.querySelector('.room-task-list input:not(:checked)'); if (!task) return notify('Your focus list is complete'); task.checked = true; event.currentTarget.innerHTML = '<i data-lucide="check-check"></i>'; window.lucide?.createIcons(); notify('Task marked complete'); });
+  document.getElementById('viewUpdatesButton')?.addEventListener('click', () => notify('All room updates are ready to review'));
+  document.getElementById('manageAccessButton')?.addEventListener('click', () => notify('Room access management is ready for your backend connection'));
+});
